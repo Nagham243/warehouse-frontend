@@ -13,7 +13,7 @@ const DailyOffers = () => {
 	useEffect(() => {
 		const fetchDailyOffers = async () => {
 			try {
-				const response = await axios.get("/api/offers/", {
+				const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/offers/`, {
 					withCredentials: true,
 				});
 				
