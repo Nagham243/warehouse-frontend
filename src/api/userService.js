@@ -124,7 +124,7 @@ const userService = {
         api.defaults.headers.common['X-CSRFToken'] = csrfToken;
       }
       
-      const response = await api.post('/login/', credentials);
+      const response = await api.post('api/login/', credentials);
       return response.data;
     } catch (error) {
       console.error('Login error:', error);
