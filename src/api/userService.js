@@ -167,6 +167,19 @@ api.interceptors.response.use(
 const userService = {
   checkAuth: checkAuthStatus,
   
+  // Try login without CSRF first to test
+  loginWithoutCSRF: async (credentials) => {
+    try {
+      console.log('🔑 Trying login WITHOUT CSRF token...');
+      const response = await api.post('/login/', credentials);
+      console.log('✅ Login without CSRF successful:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('❌ Login without CSRF failed:', error.response?.status, error.response?.data);
+      throw error;
+    }
+  },
+  
   login: async (credentials) => {
     try {
       console.log('🔑 Starting login process...');
@@ -175,27 +188,63 @@ const userService = {
       const csrfToken = await getCsrfToken();
       console.log('🔐 CSRF token for login:', csrfToken);
       
-      // Try login with minimal headers first
+      if (!csrfToken) {
+        console.warn('⚠️ No CSRF token available - this might cause 403 error');
+      }
+      
+      // Try multiple approaches for CSRF token
+      const requestConfig = {
+        headers: {}
+      };
+      
       const loginData = { ...credentials };
       
-      // If we have a CSRF token, try to include it in the request body instead of headers
       if (csrfToken) {
+        // Try all common CSRF token methods
+        requestConfig.headers['X-CSRFToken'] = csrfToken;
+        requestConfig.headers['X-CSRF-TOKEN'] = csrfToken;
         loginData.csrfmiddlewaretoken = csrfToken;
-        console.log('✅ CSRF token added to request body');
+        loginData.csrf_token = csrfToken;
+        
+        console.log('✅ CSRF token added to headers and body');
+        console.log('📤 Request headers:', requestConfig.headers);
+        console.log('📤 Request data:', { ...loginData, password: '[REDACTED]' });
       }
       
       console.log('🌐 Making login request to:', `${api.defaults.baseURL}/login/`);
       
-      const response = await api.post('/login/', loginData);
+      const response = await api.post('/login/', loginData, requestConfig);
       console.log('✅ Login successful:', response.data);
       return response.data;
     } catch (error) {
-      console.error('❌ Login error:', error);
+      console.error('❌ Login error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        headers: error.response?.headers,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          headers: error.config?.headers,
+          data: error.config?.data
+        }
+      });
       
-      if (error.code === 'ERR_NETWORK') {
-        console.error('🌐 Network/CORS error - check backend CORS configuration');
-        console.error('Backend URL:', `${import.meta.env.VITE_API_URL}`);
-        console.error('Frontend URL should be allowed in CORS settings');
+      if (error.response?.status === 403) {
+        console.error('🚫 403 Forbidden - Possible causes:');
+        console.error('   1. Missing or invalid CSRF token');
+        console.error('   2. Backend expects CSRF token in different format');
+        console.error('   3. Session/authentication issue');
+        console.error('   4. Backend CSRF validation configuration');
+        
+        // Try login without CSRF as fallback
+        console.log('🔄 Trying login without CSRF token...');
+        try {
+          return await this.loginWithoutCSRF(credentials);
+        } catch (fallbackError) {
+          console.error('❌ Login without CSRF also failed');
+          throw error; // throw original error
+        }
       }
       
       throw error;
