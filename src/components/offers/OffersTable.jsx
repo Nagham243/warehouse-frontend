@@ -128,7 +128,7 @@ const OffersTable = () => {
       setLoading(true);
       setError(null);
       
-      let url = "/api/offers/";
+      let url = `${import.meta.env.VITE_API_URL}/api/offers/`;
       const params = new URLSearchParams();
       
       if (filterStatus === "approved") {
@@ -216,7 +216,7 @@ const OffersTable = () => {
   const handleApprove = async (offerId) => {
     try {
       await axios.post(
-        `/api/offers/${offerId}/approve/`,
+        `${import.meta.env.VITE_API_URL}/api/offers/${offerId}/approve/`,
         {},
         {
           withCredentials: true,
@@ -241,7 +241,7 @@ const OffersTable = () => {
   
     try {
       await axios.post(
-        `/api/offers/${selectedOfferId}/reject/`,
+        `${import.meta.env.VITE_API_URL}/api/offers/${selectedOfferId}/reject/`,
         { rejection_reason: rejectionReason },
         {
           withCredentials: true,
@@ -269,7 +269,7 @@ const OffersTable = () => {
   
     try {
       await axios.post(
-        `/api/offers/${selectedOfferId}/flag_violation/`,
+        `${import.meta.env.VITE_API_URL}/api/offers/${selectedOfferId}/flag_violation/`,
         { violation_notes: violationNotes },
         {
           withCredentials: true,
@@ -292,7 +292,7 @@ const OffersTable = () => {
   const handleClearViolation = async (offerId) => {
     try {
       await axios.post(
-        `/api/offers/${offerId}/clear_violation/`,
+        `${import.meta.env.VITE_API_URL}/api/offers/${offerId}/clear_violation/`,
         {},
         {
           withCredentials: true,
