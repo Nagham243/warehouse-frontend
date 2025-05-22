@@ -29,7 +29,7 @@ const OfferDetailsPage = () => {
     const fetchOfferDetails = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`/api/offers/${id}/`, {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/offers/${id}/`, {
           withCredentials: true,
           headers: {
             "Content-Type": "application/json",
@@ -75,7 +75,7 @@ const OfferDetailsPage = () => {
   const handleApprove = async () => {
     try {
       await axios.post(
-        `/api/offers/${id}/approve/`,
+        `${import.meta.env.VITE_API_URL}/api/offers/${id}/approve/`,
         {},
         {
           withCredentials: true,
@@ -85,7 +85,7 @@ const OfferDetailsPage = () => {
           },
         }
       );
-      const response = await axios.get(`/api/offers/${id}/`, {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/offers/${id}/`, {
         withCredentials: true,
         headers: {
           "Content-Type": "application/json",
@@ -107,7 +107,7 @@ const OfferDetailsPage = () => {
 
     try {
       await axios.post(
-        `/api/offers/${id}/reject/`,
+        `${import.meta.env.VITE_API_URL}/api/offers/${id}/reject/`,
         { rejection_reason: rejectionReason },
         {
           withCredentials: true,
@@ -119,7 +119,7 @@ const OfferDetailsPage = () => {
       );
       setShowRejectionModal(false);
       setRejectionReason("");
-      const response = await axios.get(`/api/offers/${id}/`, {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/offers/${id}/`, {
         withCredentials: true,
         headers: {
           "Content-Type": "application/json",
@@ -141,7 +141,7 @@ const OfferDetailsPage = () => {
 
     try {
       await axios.post(
-        `/api/offers/${id}/flag_violation/`,
+        `${import.meta.env.VITE_API_URL}/api/offers/${id}/flag_violation/`,
         { violation_notes: violationNotes },
         {
           withCredentials: true,
@@ -153,7 +153,7 @@ const OfferDetailsPage = () => {
       );
       setShowViolationModal(false);
       setViolationNotes("");
-      const response = await axios.get(`/api/offers/${id}/`, {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/offers/${id}/`, {
         withCredentials: true,
         headers: {
           "Content-Type": "application/json",
@@ -170,7 +170,7 @@ const OfferDetailsPage = () => {
   const handleClearViolation = async () => {
     try {
       await axios.post(
-        `/api/offers/${id}/clear_violation/`,
+        `${import.meta.env.VITE_API_URL}/api/offers/${id}/clear_violation/`,
         {},
         {
           withCredentials: true,
@@ -180,7 +180,7 @@ const OfferDetailsPage = () => {
           },
         }
       );
-      const response = await axios.get(`/api/offers/${id}/`, {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/offers/${id}/`, {
         withCredentials: true,
         headers: {
           "Content-Type": "application/json",
