@@ -31,7 +31,7 @@ const DealsTable = () => {
       setIsLoading(true);
       setError(null);
       
-      const response = await fetch('/api/deals/', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/deals/`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ const DealsTable = () => {
       const csrfToken = getCSRFToken();
       if (!csrfToken) throw new Error('Missing CSRF token');
 
-      const response = await fetch(`/api/deals/${currentDeal.id}/approve/`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/deals/${currentDeal.id}/approve/`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -146,7 +146,7 @@ const DealsTable = () => {
       const csrfToken = getCSRFToken();
       if (!csrfToken) throw new Error('Missing CSRF token');
 
-      const response = await fetch(`/api/deals/${currentDeal.id}/reject/`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/deals/${currentDeal.id}/reject/`, {
         method: 'POST',
         credentials: 'include',
         headers: {
