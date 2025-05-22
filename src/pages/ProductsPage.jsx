@@ -53,7 +53,7 @@ const ProductsPage = () => {
 	  useEffect(() => {
 		const fetchApprovedOffers = async () => {
 		  try {
-			const response = await fetch('/api/offers/?is_approved=true', {
+			const response = await fetch(`${import.meta.env.VITE_API_URL}/api/offers/?is_approved=true`, {
 			  headers: {
 				'Content-Type': 'application/json',
 				"X-CSRFToken": getCsrfToken(), 
