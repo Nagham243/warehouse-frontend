@@ -23,13 +23,13 @@ const VendorManagementPage = () => {
 	useEffect(() => {
 		const fetchVendorStats = async () => {
 			try {
-				const vendorsResponse = await api.get(`${import.meta.env.VITE_API_URL}/vendors/`);
+				const vendorsResponse = await api.get("/vendors/");
 				const vendors = vendorsResponse.data;
 				
-				const unverifiedResponse = await api.get(`${import.meta.env.VITE_API_URL}/vendors/unverified_vendors/`);
+				const unverifiedResponse = await api.get("/vendors/unverified_vendors/");
 				const unverifiedVendors = unverifiedResponse.data;
 				
-				const classificationResponse = await api.get(`${import.meta.env.VITE_API_URL}/vendors/classification_summary/`);
+				const classificationResponse = await api.get("/vendors/classification_summary/");
 				const classificationData = classificationResponse.data;
 				
 				const premiumVendorsCount = classificationData.find(
