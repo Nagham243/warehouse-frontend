@@ -16,7 +16,7 @@ const SubcategoryGrowthChart = () => {
       try {
         setLoading(true);
         
-        const response = await axios.get("/api/subcategories/");
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/subcategories/`);
         
         const subcategoriesByMonth = processSubcategoryData(response.data);
         
