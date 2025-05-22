@@ -1,0 +1,11 @@
+tr.clickable-row {
+    transition: background-color 0.2s ease;
+  }
+  
+  tr.clickable-row:hover {
+    background-color: #f8f9fa;
+  }
+  
+  tr.clickable-row:active {
+    background-color: #e9ecef;
+  }

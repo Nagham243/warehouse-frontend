@@ -1,0 +1,31 @@
+html[dir="rtl"] .rtl-chart-container .recharts-wrapper {
+    direction: ltr; 
+  }
+  
+  html[dir="rtl"] .rtl-chart-container .recharts-text {
+    text-anchor: start;
+  }
+  
+  html[dir="rtl"] .recharts-tooltip-wrapper {
+    direction: rtl;
+    text-align: right;
+  }
+  
+  html[dir="rtl"] .recharts-legend-item {
+    direction: rtl;
+    text-align: right;
+  }
+  
+  html[dir="rtl"] .recharts-default-legend {
+    text-align: right;
+  }
+  
+  html[dir="rtl"] .recharts-pie-label-text {
+    direction: rtl;
+    text-anchor: end;
+  }
+  
+  html[dir="rtl"] .recharts-tooltip-wrapper .recharts-default-tooltip::before {
+    right: auto;
+    left: 10px;
+  }
