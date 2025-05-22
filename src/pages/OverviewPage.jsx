@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 const OverviewPage = () => {
 	const { stats,loading} = useUsers();
 	const { t, i18n } = useTranslation();
+	const [offers, setOffers] = useState([]);
 
 	const getCsrfToken = () => {
 		const cookieValue = document.cookie
