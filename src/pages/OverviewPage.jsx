@@ -13,6 +13,43 @@ import { useTranslation } from 'react-i18next';
 const OverviewPage = () => {
 	const { stats,loading} = useUsers();
 	const { t, i18n } = useTranslation();
+
+	const getCsrfToken = () => {
+		const cookieValue = document.cookie
+		  .split('; ')
+		  .find(row => row.startsWith('csrftoken='))
+		  ?.split('=')[1];
+		return cookieValue;
+	  };
+
+	  useEffect(() => {
+		const fetchApprovedOffers = async () => {
+		  try {
+			const response = await fetch(`${import.meta.env.VITE_API_URL}/api/offers/?is_approved=true`, {
+			  headers: {
+				'Content-Type': 'application/json',
+				"X-CSRFToken": getCsrfToken(), 
+			  },
+			 credentials: 'include',
+			});
+			
+			if (!response.ok) {
+			  throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			
+			const data = await response.json();
+			setOffers(data);
+		  } catch (err) {
+			console.error("Error fetching offers:", err);
+			setError(err.message);
+		  } finally {
+			setLoading(false);
+		  }
+		};
+	
+		fetchApprovedOffers();
+	  }, []);
+	
 	return (
 		<div className='flex-1 overflow-auto relative z-10'>
 			<Header title={t('overview.title')} />
