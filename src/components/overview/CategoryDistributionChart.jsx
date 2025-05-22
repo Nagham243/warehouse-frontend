@@ -12,7 +12,9 @@ const CategoryDistributionChart = () => {
 	useEffect(() => {
 		const fetchCategoryData = async () => {
 			try {
-				const response = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/with_subcategory_count/`);
+				const response = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/with_subcategory_count/`, {
+				  credentials: 'include', // Add this line
+				});
 				if (!response.ok) throw new Error("Failed to fetch category data");
 				const data = await response.json();
 
