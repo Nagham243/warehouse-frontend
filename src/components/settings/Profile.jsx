@@ -24,7 +24,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const response = await axios.get('/api/profile/');
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/profile/`);
         setProfileData(response.data);
       } catch (error) {
         setMessage({
@@ -42,7 +42,7 @@ const Profile = () => {
   const handleProfileUpdate = async (updatedData) => {
     try {
       const csrfToken = getCsrfToken();
-      const response = await axios.put('/api/profile/', updatedData, {
+      const response = await axios.put(`${import.meta.env.VITE_API_URL}/api/profile/`, updatedData, {
         headers: {
           'X-CSRFToken': csrfToken,
         },
@@ -64,7 +64,7 @@ const Profile = () => {
   const handlePasswordChange = async (passwordData) => {
     try {
       const csrfToken = getCsrfToken();
-      await axios.post('/api/password-change/', passwordData, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/password-change/`, passwordData, {
         headers: {
           'X-CSRFToken': csrfToken,
         },
