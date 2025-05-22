@@ -57,7 +57,8 @@ const ProductsPage = () => {
 			  headers: {
 				'Content-Type': 'application/json',
 				"X-CSRFToken": getCsrfToken(), 
-			  }
+			  },
+			 credentials: 'include',
 			});
 			
 			if (!response.ok) {
