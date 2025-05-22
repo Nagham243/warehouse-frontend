@@ -51,7 +51,7 @@ const VendorCommissionsPage = () => {
   const fetchVendors = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("/api/commissions/vendor_commissions/", {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/commissions/vendor_commissions/`, {
         withCredentials: true
       });
       
@@ -102,7 +102,7 @@ const VendorCommissionsPage = () => {
 
   const fetchCommissions = async () => {
     try {
-      const response = await axios.get("/api/commissions/", {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/commissions/`, {
         params: { commission_type: "vendor_type", is_active: true },
         withCredentials: true
       });
@@ -212,13 +212,13 @@ const VendorCommissionsPage = () => {
       axios.defaults.xsrfHeaderName = 'X-CSRFToken';
       
       const response = isCustomCommission 
-        ? await axios.post("/api/commissions/create_special_commission/", {
+        ? await axios.post(`${import.meta.env.VITE_API_URL}/api/commissions/create_special_commission/`, {
             vendor_id: currentVendor.id,
             name: customCommission.name,
             description: customCommission.description,
             percentage: parseFloat(customCommission.percentage)
           }, { withCredentials: true })
-        : await axios.post(`/api/commissions/${currentVendor.id}/assign_commission/`, {
+        : await axios.post(`${import.meta.env.VITE_API_URL}/api/commissions/${currentVendor.id}/assign_commission/`, {
             commission_id: selectedCommission
           }, { withCredentials: true });
 
