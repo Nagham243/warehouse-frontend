@@ -294,7 +294,9 @@ export default function ActivityDashboard() {
     if (objectTypeFilter) queryParams.append('object_type', objectTypeFilter);
     if (searchTerm) queryParams.append('search', searchTerm);
     
-    fetch(`${import.meta.env.VITE_API_URL}/api/activities/?${queryParams.toString()}`)
+    fetch(`${import.meta.env.VITE_API_URL}/api/activities/?${queryParams.toString()}`, {
+    credentials: 'include'
+  })
       .then(response => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -324,7 +326,9 @@ export default function ActivityDashboard() {
         setLoading(false);
       });
       
-    fetch(`${import.meta.env.VITE_API_URL}/api/activities/activity_summary/`)
+    fetch(`${import.meta.env.VITE_API_URL}/api/activities/activity_summary/`, {
+    credentials: 'include'
+  })
       .then(response => response.json())
       .then(data => {
         setSummaryData(data || []);
