@@ -10,7 +10,7 @@ const api = axios.create({
 
 const checkAuthStatus = async () => {
   try {
-    const response = await axios.get('/auth-status/');
+    const response = await axios.get(`${import.meta.env.VITE_API_URL}/auth-status/`);
     return response.data.authenticated;
   } catch (error) {
     console.error('Error checking authentication status:', error);
