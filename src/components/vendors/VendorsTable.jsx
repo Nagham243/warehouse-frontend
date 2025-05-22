@@ -169,7 +169,8 @@ const VendorsTable = () => {
           headers: {
             'Content-Type': 'application/json',
             "X-CSRFToken": getCsrfToken(), 
-          }
+          },
+          withCredentials: true,
         }
       );
       
