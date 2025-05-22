@@ -23,19 +23,19 @@ const DealsPage = () => {
 	useEffect(() => {
 		const fetchDealStats = async () => {
 			try {
-				const totalResponse = await fetch('/api/deals/', {
+				const totalResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/deals/`, {
 					credentials: 'include',
 				});
 				
-				const pendingResponse = await fetch('/api/deals/pending_deals/', {
+				const pendingResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/deals/pending_deals/`, {
 					credentials: 'include',
 				});
 				
-				const approvedResponse = await fetch('/api/deals/approved_deals/', {
+				const approvedResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/deals/approved_deals/`, {
 					credentials: 'include',
 				});
 				
-				const rejectedResponse = await fetch('/api/deals/rejected_deals/', {
+				const rejectedResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/deals/rejected_deals/`, {
 					credentials: 'include',
 				});
 
