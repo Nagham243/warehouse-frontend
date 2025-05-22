@@ -61,12 +61,10 @@ const getCsrfToken = async () => {
       console.log('🌐 Fetching CSRF token from API endpoint...');
       console.log('API base URL:', api.defaults.baseURL);
       
-      // Try different possible response structures
       const response = await api.get('/csrf-token/');
       console.log('📥 CSRF API response:', response);
       console.log('📊 Response data:', response.data);
       
-      // Try different possible field names
       csrfToken = response.data?.csrfToken || 
                   response.data?.csrf_token || 
                   response.data?.token ||
@@ -94,6 +92,48 @@ const getCsrfToken = async () => {
   return csrfToken;
 };
 
+// CORS-safe CSRF token application function
+const applyCsrfTokenSafely = async (config) => {
+  try {
+    const csrfToken = await getCsrfToken();
+    
+    if (csrfToken) {
+      // Instead of using headers that might be blocked by CORS,
+      // include CSRF token in the request body for POST requests
+      if (config.method === 'post' && config.data) {
+        if (typeof config.data === 'string') {
+          try {
+            const parsedData = JSON.parse(config.data);
+            parsedData.csrfmiddlewaretoken = csrfToken;
+            config.data = JSON.stringify(parsedData);
+            console.log('✅ CSRF token added to request body');
+          } catch (e) {
+            console.warn('Could not parse request data as JSON for CSRF token injection');
+          }
+        } else if (typeof config.data === 'object') {
+          config.data.csrfmiddlewaretoken = csrfToken;
+          console.log('✅ CSRF token added to request body object');
+        }
+      }
+      
+      // For non-POST requests or as fallback, try safe headers first
+      // Only use headers that are commonly allowed by CORS
+      try {
+        config.headers['X-CSRFToken'] = csrfToken;
+        console.log('✅ CSRF token set in X-CSRFToken header (may be filtered by CORS)');
+      } catch (headerError) {
+        console.warn('Could not set CSRF header:', headerError);
+      }
+    } else {
+      console.warn('No CSRF token available for request');
+    }
+  } catch (error) {
+    console.error('Error in CSRF token handling:', error);
+  }
+  
+  return config;
+};
+
 api.interceptors.request.use(async (config) => {
   console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`, { 
     headers: config.headers,
@@ -101,31 +141,14 @@ api.interceptors.request.use(async (config) => {
   });
   
   if (['post', 'put', 'patch', 'delete'].includes(config.method)) {
-    try {
-      const csrfToken = await getCsrfToken();
-      
-      if (csrfToken) {
-        // Only use the most common CSRF header names that are likely allowed by CORS
-        config.headers['X-CSRFToken'] = csrfToken;
-        // Remove other headers that might not be allowed by CORS
-        // config.headers['X-XSRF-TOKEN'] = csrfToken;
-        // config.headers['CSRF-Token'] = csrfToken;
-        // config.headers['X-CSRF-TOKEN'] = csrfToken;
-        
-        console.log('✅ CSRF token set in X-CSRFToken header');
-      } else {
-        console.warn('No CSRF token available for request');
-      }
-    } catch (error) {
-      console.error('Error in CSRF token handling:', error);
-    }
+    config = await applyCsrfTokenSafely(config);
   }
+  
   return config;
 });
 
 api.interceptors.response.use(
   response => {
-    // For debugging, log the response
     console.log(`API Response: ${response.status} ${response.config.method?.toUpperCase()} ${response.config.url}`, { 
       data: response.data 
     });
@@ -167,84 +190,108 @@ api.interceptors.response.use(
 const userService = {
   checkAuth: checkAuthStatus,
   
-  // Try login without CSRF first to test
-  loginWithoutCSRF: async (credentials) => {
-    try {
-      console.log('🔑 Trying login WITHOUT CSRF token...');
-      const response = await api.post('/login/', credentials);
-      console.log('✅ Login without CSRF successful:', response.data);
-      return response.data;
-    } catch (error) {
-      console.error('❌ Login without CSRF failed:', error.response?.status, error.response?.data);
-      throw error;
-    }
-  },
-  
+  // Simplified login method that focuses on CORS compatibility
   login: async (credentials) => {
     try {
-      console.log('🔑 Starting login process...');
+      console.log('🔑 Starting CORS-compatible login process...');
       console.log('📋 Credentials:', { ...credentials, password: '[REDACTED]' });
       
-      const csrfToken = await getCsrfToken();
-      console.log('🔐 CSRF token for login:', csrfToken);
-      
-      if (!csrfToken) {
-        console.warn('⚠️ No CSRF token available - this might cause 403 error');
-      }
-      
-      // Try multiple approaches for CSRF token
-      const requestConfig = {
-        headers: {}
-      };
-      
-      const loginData = { ...credentials };
-      
-      if (csrfToken) {
-        // Try all common CSRF token methods
-        requestConfig.headers['X-CSRFToken'] = csrfToken;
-        requestConfig.headers['X-CSRF-TOKEN'] = csrfToken;
-        loginData.csrfmiddlewaretoken = csrfToken;
-        loginData.csrf_token = csrfToken;
+      // Method 1: Try with CSRF token in body only (most CORS-compatible)
+      try {
+        console.log('🎯 Attempt 1: Login with CSRF in body only...');
+        const csrfToken = await getCsrfToken();
         
-        console.log('✅ CSRF token added to headers and body');
-        console.log('📤 Request headers:', requestConfig.headers);
+        const loginData = { 
+          ...credentials,
+          ...(csrfToken && { csrfmiddlewaretoken: csrfToken })
+        };
+        
         console.log('📤 Request data:', { ...loginData, password: '[REDACTED]' });
-      }
-      
-      console.log('🌐 Making login request to:', `${api.defaults.baseURL}/login/`);
-      
-      const response = await api.post('/login/', loginData, requestConfig);
-      console.log('✅ Login successful:', response.data);
-      return response.data;
-    } catch (error) {
-      console.error('❌ Login error details:', {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        headers: error.response?.headers,
-        config: {
-          url: error.config?.url,
-          method: error.config?.method,
-          headers: error.config?.headers,
-          data: error.config?.data
-        }
-      });
-      
-      if (error.response?.status === 403) {
-        console.error('🚫 403 Forbidden - Possible causes:');
-        console.error('   1. Missing or invalid CSRF token');
-        console.error('   2. Backend expects CSRF token in different format');
-        console.error('   3. Session/authentication issue');
-        console.error('   4. Backend CSRF validation configuration');
         
-        // Try login without CSRF as fallback
-        console.log('🔄 Trying login without CSRF token...');
+        // Create a request without custom headers to avoid CORS preflight
+        const response = await axios.post(
+          `${apiBaseURL}/login/`, 
+          loginData,
+          {
+            withCredentials: true,
+            headers: {
+              'Content-Type': 'application/json'
+              // No custom headers to avoid CORS issues
+            }
+          }
+        );
+        
+        console.log('✅ Login successful (method 1):', response.data);
+        return response.data;
+      } catch (method1Error) {
+        console.log('❌ Method 1 failed:', method1Error.message);
+        
+        // Method 2: Try without CSRF token at all
         try {
-          return await this.loginWithoutCSRF(credentials);
-        } catch (fallbackError) {
-          console.error('❌ Login without CSRF also failed');
-          throw error; // throw original error
+          console.log('🎯 Attempt 2: Login without CSRF token...');
+          const response = await axios.post(
+            `${apiBaseURL}/login/`, 
+            credentials,
+            {
+              withCredentials: true,
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            }
+          );
+          
+          console.log('✅ Login successful (method 2 - no CSRF):', response.data);
+          return response.data;
+        } catch (method2Error) {
+          console.log('❌ Method 2 also failed:', method2Error.message);
+          
+          // Method 3: Try with form data instead of JSON
+          try {
+            console.log('🎯 Attempt 3: Login with form data...');
+            const formData = new FormData();
+            formData.append('username', credentials.username);
+            formData.append('password', credentials.password);
+            
+            const csrfToken = await getCsrfToken();
+            if (csrfToken) {
+              formData.append('csrfmiddlewaretoken', csrfToken);
+            }
+            
+            const response = await axios.post(
+              `${apiBaseURL}/login/`, 
+              formData,
+              {
+                withCredentials: true,
+                headers: {
+                  'Content-Type': 'multipart/form-data'
+                }
+              }
+            );
+            
+            console.log('✅ Login successful (method 3 - form data):', response.data);
+            return response.data;
+          } catch (method3Error) {
+            console.error('❌ All login methods failed');
+            console.error('Final error details:', {
+              method1: method1Error.message,
+              method2: method2Error.message,
+              method3: method3Error.message
+            });
+            
+            // Throw the most informative error
+            throw method1Error;
+          }
         }
+      }
+    } catch (error) {
+      console.error('❌ Login process failed:', error);
+      
+      if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+        console.error('🌐 Network Error - Possible causes:');
+        console.error('   1. CORS headers not properly configured on backend');
+        console.error('   2. Backend server not responding');
+        console.error('   3. Preflight request being blocked');
+        console.error('   4. Custom headers not allowed by Access-Control-Allow-Headers');
       }
       
       throw error;
@@ -253,7 +300,6 @@ const userService = {
   
   logout: async () => {
     try {
-      // Fixed: Remove duplicate /api prefix
       const response = await api.post('/logout/');
       return response.data;
     } catch (error) {
@@ -291,11 +337,6 @@ const userService = {
   
   createUser: async (userData) => {
     try {
-      const csrfToken = await getCsrfToken();
-      if (csrfToken) {
-        api.defaults.headers.common['X-CSRFToken'] = csrfToken;
-      }
-      
       console.log("Creating user with data:", userData);
       const response = await api.post('/users/', userData);
       console.log("Create user response:", response.data);
