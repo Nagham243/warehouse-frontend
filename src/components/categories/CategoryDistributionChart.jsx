@@ -16,7 +16,7 @@ const CategoryDistributionChart = () => {
 	useEffect(() => {
 		const fetchCategoriesWithCount = async () => {
 			try {
-				const response = await axios.get("/api/categories/with_subcategory_count/");
+				const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/categories/with_subcategory_count/`);
 				const formattedData = response.data.map(category => ({
 					name: category.name,
 					value: category.subcategory_count
