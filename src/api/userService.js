@@ -18,9 +18,7 @@ const checkAuthStatus = async () => {
   }
 };
 
-
 const getCsrfToken = async () => {
-
   const cookies = document.cookie.split(';');
   let csrfToken = null;
   
@@ -38,6 +36,7 @@ const getCsrfToken = async () => {
   
   if (!csrfToken) {
     try {
+      // Fixed: Use the api instance (which already has /api prefix) instead of raw axios
       const { data } = await api.get('/csrf-token/');
       csrfToken = data.csrfToken;
     } catch (error) {
@@ -134,6 +133,7 @@ const userService = {
   
   logout: async () => {
     try {
+      // Fixed: Remove duplicate /api prefix
       const response = await api.post('/logout/');
       return response.data;
     } catch (error) {
