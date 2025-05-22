@@ -22,7 +22,7 @@ const DealStatusDistribution = () => {
 	useEffect(() => {
 		const fetchDealStatus = async () => {
 			try {
-				const response = await fetch('/api/deals/', {
+				const response = await fetch(`${import.meta.env.VITE_API_URL}/api/deals/`, {
 					credentials: 'include',
 				});
 
