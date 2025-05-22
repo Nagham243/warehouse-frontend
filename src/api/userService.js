@@ -134,7 +134,7 @@ const userService = {
   
   logout: async () => {
     try {
-      const response = await api.post('/api/logout/');
+      const response = await api.post('/logout/');
       return response.data;
     } catch (error) {
       console.error('Logout error:', error);
