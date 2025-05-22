@@ -62,10 +62,10 @@ const OverviewPage = () => {
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 1 }}
 				>
-					<StatCard name={t('overview.totalSales')}  icon={Zap} value='$12,345' color='#6366F1' />
+					<StatCard name={t('overview.totalSales')}  icon={Zap} value='$0' color='#6366F1' />
 					<StatCard name={t('overview.newUsers')}  icon={Users} value={loading ? t('common.loading') : stats?.newUsersToday ?? t('common.na')}  color='#8B5CF6' />
 					<StatCard name={t('overview.totalProducts')}  icon={ShoppingBag} value={offers.length} color='#EC4899' />
-					<StatCard name={t('overview.conversionRate')}  icon={BarChart2} value='12.5%' color='#10B981' />
+					<StatCard name={t('overview.conversionRate')}  icon={BarChart2} value='0%' color='#10B981' />
 				</motion.div>
 
 				{/* CHARTS */}
