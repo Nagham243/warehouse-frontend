@@ -1,12 +1,23 @@
 import axios from 'axios';
 
+console.log('🔧 Environment variables:', {
+  VITE_API_URL: import.meta.env.VITE_API_URL,
+  NODE_ENV: import.meta.env.NODE_ENV,
+  DEV: import.meta.env.DEV
+});
+
+const apiBaseURL = `${import.meta.env.VITE_API_URL}/api`;
+console.log('🌐 API Base URL:', apiBaseURL);
+
 const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL}/api`,
+  baseURL: apiBaseURL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+console.log('✅ Axios instance created with baseURL:', api.defaults.baseURL);
 
 const checkAuthStatus = async () => {
   try {
@@ -19,31 +30,67 @@ const checkAuthStatus = async () => {
 };
 
 const getCsrfToken = async () => {
+  console.log('🔐 Starting CSRF token fetch...');
+  
+  // First try cookies
   const cookies = document.cookie.split(';');
   let csrfToken = null;
+  
+  console.log('🍪 Checking cookies:', document.cookie);
   
   for (const cookie of cookies) {
     const [name, value] = cookie.trim().split('=');
     if (name === 'XSRF-TOKEN' || name === 'csrftoken' || name === '_csrf') {
       csrfToken = decodeURIComponent(value);
+      console.log(`✅ Found CSRF token in cookie ${name}:`, csrfToken);
       break;
     }
   }
   
+  // Try meta tag
   if (!csrfToken) {
     csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-  }
-  
-  if (!csrfToken) {
-    try {
-      // Fixed: Use the api instance (which already has /api prefix) instead of raw axios
-      const { data } = await api.get('/csrf-token/');
-      csrfToken = data.csrfToken;
-    } catch (error) {
-      console.warn('Failed to fetch CSRF token from API:', error);
+    if (csrfToken) {
+      console.log('✅ Found CSRF token in meta tag:', csrfToken);
     }
   }
   
+  // Try API endpoint
+  if (!csrfToken) {
+    try {
+      console.log('🌐 Fetching CSRF token from API endpoint...');
+      console.log('API base URL:', api.defaults.baseURL);
+      
+      // Try different possible response structures
+      const response = await api.get('/csrf-token/');
+      console.log('📥 CSRF API response:', response);
+      console.log('📊 Response data:', response.data);
+      
+      // Try different possible field names
+      csrfToken = response.data?.csrfToken || 
+                  response.data?.csrf_token || 
+                  response.data?.token ||
+                  response.data?.csrfmiddlewaretoken ||
+                  response.data;
+      
+      if (csrfToken) {
+        console.log('✅ Found CSRF token from API:', csrfToken);
+      } else {
+        console.warn('❌ No CSRF token found in API response');
+      }
+    } catch (error) {
+      console.error('❌ Failed to fetch CSRF token from API:', error);
+      console.error('Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        config: error.config
+      });
+    }
+  }
+  
+  console.log('🔐 Final CSRF token:', csrfToken);
   return csrfToken;
 };
 
@@ -58,10 +105,14 @@ api.interceptors.request.use(async (config) => {
       const csrfToken = await getCsrfToken();
       
       if (csrfToken) {
+        // Only use the most common CSRF header names that are likely allowed by CORS
         config.headers['X-CSRFToken'] = csrfToken;
-        config.headers['X-XSRF-TOKEN'] = csrfToken;
-        config.headers['CSRF-Token'] = csrfToken;
-        config.headers['X-CSRF-TOKEN'] = csrfToken;
+        // Remove other headers that might not be allowed by CORS
+        // config.headers['X-XSRF-TOKEN'] = csrfToken;
+        // config.headers['CSRF-Token'] = csrfToken;
+        // config.headers['X-CSRF-TOKEN'] = csrfToken;
+        
+        console.log('✅ CSRF token set in X-CSRFToken header');
       } else {
         console.warn('No CSRF token available for request');
       }
@@ -118,15 +169,35 @@ const userService = {
   
   login: async (credentials) => {
     try {
+      console.log('🔑 Starting login process...');
+      console.log('📋 Credentials:', { ...credentials, password: '[REDACTED]' });
+      
       const csrfToken = await getCsrfToken();
+      console.log('🔐 CSRF token for login:', csrfToken);
+      
+      // Try login with minimal headers first
+      const loginData = { ...credentials };
+      
+      // If we have a CSRF token, try to include it in the request body instead of headers
       if (csrfToken) {
-        api.defaults.headers.common['X-CSRFToken'] = csrfToken;
+        loginData.csrfmiddlewaretoken = csrfToken;
+        console.log('✅ CSRF token added to request body');
       }
       
-      const response = await api.post('/login/', credentials);
+      console.log('🌐 Making login request to:', `${api.defaults.baseURL}/login/`);
+      
+      const response = await api.post('/login/', loginData);
+      console.log('✅ Login successful:', response.data);
       return response.data;
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('❌ Login error:', error);
+      
+      if (error.code === 'ERR_NETWORK') {
+        console.error('🌐 Network/CORS error - check backend CORS configuration');
+        console.error('Backend URL:', `${import.meta.env.VITE_API_URL}`);
+        console.error('Frontend URL should be allowed in CORS settings');
+      }
+      
       throw error;
     }
   },
