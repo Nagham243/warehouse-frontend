@@ -23,8 +23,8 @@ const CategoriesPage = () => {
 	useEffect(() => {
 		const fetchCategoryStats = async () => {
 			try {
-				const categoriesResponse = await axios.get("/api/categories/with_subcategory_count/");
-				const subcategoriesResponse = await axios.get("/api/subcategories/");
+				const categoriesResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/categories/with_subcategory_count/`);
+				const subcategoriesResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/subcategories/`);
 				
 				const totalCategories = categoriesResponse.data.length;
 				const totalSubcategories = subcategoriesResponse.data.length;
