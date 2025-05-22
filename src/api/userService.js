@@ -1,11 +1,11 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https:web-production-baee4.up.railway.app/api',
+  baseURL: ${import.meta.env.VITE_API_URL}/api,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-  }
+  },
 });
 
 const checkAuthStatus = async () => {
@@ -124,7 +124,7 @@ const userService = {
         api.defaults.headers.common['X-CSRFToken'] = csrfToken;
       }
       
-      const response = await api.post('https:web-production-baee4.up.railway.app/login/', credentials);
+      const response = await api.post('/login/', credentials);
       return response.data;
     } catch (error) {
       console.error('Login error:', error);
