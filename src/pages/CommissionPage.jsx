@@ -47,15 +47,15 @@ const CommissionPage = () => {
       setLoading(true);
       setError(null);
       
-      const vendorCountsResponse = await axios.get('/api/commissions/vendor-counts/', {
+      const vendorCountsResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/commissions/vendor-counts/`, {
         withCredentials: true
       });
       
-      const distributionResponse = await axios.get('/api/commissions/summary/', {
+      const distributionResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/commissions/summary/`, {
         withCredentials: true
       });
       
-      const commissionsResponse = await axios.get('/api/commissions/', {
+      const commissionsResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/commissions/`, {
         params: { 
           is_active: true,
           commission_type: 'vendor_type'  
@@ -146,7 +146,7 @@ const CommissionPage = () => {
     try {
       setLoading(true);
       
-      const allCommissionsResponse = await axios.get('/api/commissions/', {
+      const allCommissionsResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/commissions/`, {
         params: { commission_type: 'vendor_type' },
         withCredentials: true
       });
@@ -164,7 +164,7 @@ const CommissionPage = () => {
         throw new Error(`No commission found for ${classification} classification`);
       }
       
-      await axios.patch(`/api/commissions/${commission.id}/`, {
+      await axios.patch(`${import.meta.env.VITE_API_URL}/api/commissions/${commission.id}/`, {
         percentage: parseFloat(newPercentage)
       }, {
         params: { commission_type: 'vendor_type' },
