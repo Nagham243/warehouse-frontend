@@ -48,7 +48,8 @@ const EditCommissionModal = ({ isOpen, onClose, classification, currentPercentag
     try {
       
       const allCommissionsResponse = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/api/commissions/`, {
-        params: { commission_type: 'vendor_type' }
+        params: { commission_type: 'vendor_type' },
+        withCredentials: true,
       });
 
       const commissions = Array.isArray(allCommissionsResponse.data)
@@ -68,7 +69,8 @@ const EditCommissionModal = ({ isOpen, onClose, classification, currentPercentag
       const updateResponse = await axiosInstance.patch(`${import.meta.env.VITE_API_URL}/api/commissions/${commission.id}/`, {
         percentage: percentage
       }, {
-        params: { commission_type: 'vendor_type' }
+        params: { commission_type: 'vendor_type' },
+        withCredentials: true,
       });
 
      
