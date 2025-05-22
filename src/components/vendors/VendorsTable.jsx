@@ -112,12 +112,18 @@ const VendorsTable = () => {
   };
 
   const getCsrfToken = () => {
-    const cookieValue = document.cookie
-      .split('; ')
-      .find(row => row.startsWith('csrftoken='))
-      ?.split('=')[1];
-    return cookieValue;
-  };
+  const token = document.cookie
+    .split('; ')
+    .find(row => row.startsWith('csrftoken='))
+    ?.split('=')[1];
+
+  if (!token) {
+    console.warn("CSRF token not found in cookies.");
+  }
+
+  return token;
+};
+
 
   const handleVerify = async () => {
     if (!currentVendor) return;
