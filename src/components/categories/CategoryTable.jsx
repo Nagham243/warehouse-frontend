@@ -68,12 +68,12 @@ const CategoryTable = () => {
       setLoading(true);
       setError(null);
       
-      const response = await axios.get("/api/categories/");
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/categories/`);
       
       const categoriesWithSubcategories = await Promise.all(
         response.data.map(async (category) => {
           try {
-            const subcategoriesResponse = await axios.get(`/api/categories/${category.id}/subcategories/`);
+            const subcategoriesResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/categories/${category.id}/subcategories/`);
             return {
               ...category,
               subcategories: subcategoriesResponse.data
@@ -134,7 +134,7 @@ const CategoryTable = () => {
     try {
       setError(null);
       
-      const response = await axios.post("/api/categories/", newCategoryData, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/categories/`, newCategoryData, {
         headers: {
           'Content-Type': 'application/json',
         }
@@ -160,7 +160,7 @@ const CategoryTable = () => {
     try {
       setError(null);
       
-      await axios.put(`/api/categories/${editCategoryData.id}/`, {
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/categories/${editCategoryData.id}/`, {
         name: editCategoryData.name,
         description: editCategoryData.description
       });
@@ -196,7 +196,7 @@ const CategoryTable = () => {
     try {
       setError(null);
       
-      await axios.delete(`/api/categories/${categoryId}/`);
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/categories/${categoryId}/`);
       
       const updatedCategories = categories.filter(category => category.id !== categoryId);
       setCategories(updatedCategories);
@@ -224,7 +224,7 @@ const CategoryTable = () => {
 	  };
 	  
 	  const response = await axios.post(
-		`/api/subcategories/`, 
+		`${import.meta.env.VITE_API_URL}/api/subcategories/`, 
 		subcategoryPayload,
 		{
 		  headers: {
@@ -248,7 +248,7 @@ const CategoryTable = () => {
 		};
 		
 		const response = await axios.post(
-		  `/api/subcategories/`, 
+		  `${import.meta.env.VITE_API_URL}/api/subcategories/`, 
 		  subcategoryPayload,
 		  {
 			headers: {
@@ -303,7 +303,7 @@ const CategoryTable = () => {
     try {
       setError(null);
       
-      await axios.put(`/api/subcategories/${editSubcategoryData.id}/`, {
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/subcategories/${editSubcategoryData.id}/`, {
         name: editSubcategoryData.name,
         description: editSubcategoryData.description
       });
@@ -340,7 +340,7 @@ const CategoryTable = () => {
     try {
       setError(null);
       
-      await axios.delete(`/api/subcategories/${subcategoryId}/`);
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/subcategories/${subcategoryId}/`);
       
       const updatedCategories = categories.map(category => {
         if (category.id === categoryId) {
