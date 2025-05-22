@@ -45,7 +45,7 @@ const CommissionSettings = () => {
         params.commission_type = selectedType;
       }
       
-      const response = await axios.get("/api/commissions/", {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/commissions/`, {
         params,
         withCredentials: true
       });
@@ -65,12 +65,12 @@ const CommissionSettings = () => {
 
   const fetchCategories = async () => {
     try {
-      const categoriesResponse = await axios.get("/api/categories/", {
+      const categoriesResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/categories/`, {
         withCredentials: true
       });
       setCategories(categoriesResponse.data);
       
-      const subcategoriesResponse = await axios.get("/api/subcategories/", {
+      const subcategoriesResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/subcategories/`, {
         withCredentials: true
       });
       setSubcategories(subcategoriesResponse.data);
@@ -230,7 +230,7 @@ const CommissionSettings = () => {
       let response;
       
       if (currentCommission) {
-        response = await axios.put(`/api/commissions/${currentCommission.id}/`, submissionData, {
+        response = await axios.put(`${import.meta.env.VITE_API_URL}/api/commissions/${currentCommission.id}/`, submissionData, {
           withCredentials: true
         });
         setSuccessMessage("Commission updated successfully!");
@@ -271,7 +271,7 @@ const CommissionSettings = () => {
     }
     
     try {
-      await axios.delete(`/api/commissions/${id}/`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/commissions/${id}/`, {
         withCredentials: true
       });
       
