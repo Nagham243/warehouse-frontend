@@ -27,7 +27,7 @@ const DailyDeals = () => {
 				const endDateFormatted = formatDateForAPI(today);
 				const startDateFormatted = formatDateForAPI(startDate);
 				
-				const response = await fetch(`/api/deals/?ordering=created_at&created_at__gte=${startDateFormatted}&created_at__lte=${endDateFormatted}`, {
+				const response = await fetch(`${import.meta.env.VITE_API_URL}/api/deals/?ordering=created_at&created_at__gte=${startDateFormatted}&created_at__lte=${endDateFormatted}`, {
 					credentials: 'include',
 				});
 
