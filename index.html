@@ -63,7 +63,7 @@
 
         // Example usage for commission update
         async function updateCommission(commissionId, percentage) {
-            const url = `/api/commissions/${commissionId}/`;
+            const url = `${import.meta.env.VITE_API_URL}/api/commissions/${commissionId}/`;
             const data = {
                 percentage: percentage,
             };
