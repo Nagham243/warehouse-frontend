@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
-import { updateCommission } from '../CommissionManager.js';
+import CommissionManager from '../CommissionManager.js';
 
 const EditCommissionModal = ({ isOpen, onClose, classification, currentPercentage, onSave }) => {
   const { t } = useTranslation();
