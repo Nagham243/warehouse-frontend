@@ -9,5 +9,98 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+        // Global CSRF utility functions
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Global function to make API calls with CSRF
+        async function makeAPICall(url, method = 'GET', data = null) {
+            const csrfToken = getCookie('csrftoken');
+            
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            
+            if (csrfToken) {
+                headers['X-CSRFToken'] = csrfToken;
+            }
+            
+            const config = {
+                method: method,
+                headers: headers,
+            };
+            
+            if (data && (method === 'POST' || method === 'PATCH' || method === 'PUT')) {
+                config.body = JSON.stringify(data);
+            }
+            
+            try {
+                const response = await fetch(url, config);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API call failed:', error);
+                throw error;
+            }
+        }
+
+        // Example usage for commission update
+        async function updateCommission(commissionId, percentage) {
+            const url = `/api/commissions/${commissionId}/`;
+            const data = {
+                percentage: percentage,
+            };
+            
+            try {
+                const result = await makeAPICall(url, 'PATCH', data);
+                console.log('Commission updated:', result);
+                return result;
+            } catch (error) {
+                console.error('Error updating commission:', error);
+                throw error;
+            }
+        }
+
+        // Add event listener for form submissions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle commission form submissions
+            const commissionForms = document.querySelectorAll('.commission-form');
+            commissionForms.forEach(form => {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(form);
+                    const commissionId = form.dataset.commissionId;
+                    const percentage = formData.get('percentage');
+                    
+                    try {
+                        await updateCommission(commissionId, percentage);
+                        alert('Commission updated successfully!');
+                        // Reload or update UI
+                        window.location.reload();
+                    } catch (error) {
+                        alert('Error updating commission: ' + error.message);
+                    }
+                });
+            });
+        });
+    </script>
   </body>
 </html>
