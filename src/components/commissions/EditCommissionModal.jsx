@@ -17,6 +17,16 @@ const EditCommissionModal = ({ isOpen, onClose, classification, currentPercentag
 
   if (!isOpen) return null;
 
+  const csrftoken = getCookie('csrftoken');
+  fetch(url, {
+      method: 'PATCH',
+      headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrftoken,
+      },
+      body: JSON.stringify(data)
+  });
+
   // Enhanced CSRF token retrieval with multiple fallback methods
   const getCSRFToken = () => {
     try {
