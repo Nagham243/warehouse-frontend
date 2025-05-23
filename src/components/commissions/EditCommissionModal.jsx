@@ -119,7 +119,7 @@ const EditCommissionModal = ({ isOpen, onClose, classification, currentPercentag
       // Step 1: Get all commissions
       let allCommissionsResponse;
       try {
-        allCommissionsResponse = await axiosInstance.get('/api/commissions/', {
+        allCommissionsResponse = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/api/commissions/`, {
           params: { commission_type: 'vendor_type' }
         });
       } catch (fetchError) {
@@ -177,7 +177,7 @@ const EditCommissionModal = ({ isOpen, onClose, classification, currentPercentag
 
       console.log('Attempting to update commission:', {
         id: commission.id,
-        url: `/api/commissions/${commission.id}/`,
+        url: `${import.meta.env.VITE_API_URL}/api/commissions/${commission.id}/`,
         payload: updatePayload,
         currentData: commission
       });
@@ -198,7 +198,7 @@ const EditCommissionModal = ({ isOpen, onClose, classification, currentPercentag
       }
 
       const updateResponse = await axiosInstance.patch(
-        `/api/commissions/${commission.id}/`,
+        `${import.meta.env.VITE_API_URL}/api/commissions/${commission.id}/`,
         updatePayload,
         updateConfig
       );
