@@ -15,7 +15,6 @@ const EditCommissionModal = ({ isOpen, onClose, classification, currentPercentag
       setError(null); // Clear any previous errors when modal opens
     }
   }, [isOpen, currentPercentage]);
-
   if (!isOpen) return null;
 
   const csrftoken = getCookie('csrftoken');
