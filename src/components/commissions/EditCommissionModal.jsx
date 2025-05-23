@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { useTranslation } from "react-i18next";
+import api from "../../api/userService"; // تأكد أن هذا المسار صحيح
+
 const EditCommissionModal = ({ isOpen, onClose, classification, currentPercentage, onSave }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [percentage, setPercentage] = useState(parseFloat(currentPercentage) || 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
-
 
   useEffect(() => {
     if (isOpen && currentPercentage) {
@@ -16,38 +16,13 @@ const EditCommissionModal = ({ isOpen, onClose, classification, currentPercentag
 
   if (!isOpen) return null;
 
- 
-  const getCSRFToken = () => {
-    const name = 'csrftoken=';
-    const decodedCookie = decodeURIComponent(document.cookie);
-    const cookieArray = decodedCookie.split(';');
-    
-    for (let i = 0; i < cookieArray.length; i++) {
-      let cookie = cookieArray[i].trim();
-      if (cookie.indexOf(name) === 0) {
-        return cookie.substring(name.length, cookie.length);
-      }
-    }
-    return '';
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
 
-    
-    const axiosInstance = axios.create({
-      withCredentials: true,
-      headers: {
-        'X-CSRFToken': getCSRFToken(),  
-        'Content-Type': 'application/json'
-      }
-    });
-
     try {
-      
-      const allCommissionsResponse = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/api/commissions/`, {
+      const allCommissionsResponse = await api.get('/commissions/', {
         params: { commission_type: 'vendor_type' }
       });
 
@@ -55,8 +30,7 @@ const EditCommissionModal = ({ isOpen, onClose, classification, currentPercentag
         ? allCommissionsResponse.data
         : allCommissionsResponse.data.results || [];
 
-      
-      const commission = commissions.find(comm => 
+      const commission = commissions.find(comm =>
         comm.details?.vendor_classification?.toLowerCase() === classification.toLowerCase()
       );
 
@@ -64,48 +38,31 @@ const EditCommissionModal = ({ isOpen, onClose, classification, currentPercentag
         throw new Error(`No commission found for ${classification} classification`);
       }
 
-     
-      const updateResponse = await axiosInstance.patch(`${import.meta.env.VITE_API_URL}/api/commissions/${commission.id}/`, {
+      const updateResponse = await api.patch(`/commissions/${commission.id}/`, {
         percentage: percentage
       }, {
         params: { commission_type: 'vendor_type' }
       });
 
-     
       if (updateResponse.status >= 200 && updateResponse.status < 300) {
-        console.log("Commission successfully updated:", updateResponse.data);
         onSave(classification.toLowerCase(), percentage);
         onClose();
       } else {
         throw new Error("Server returned an unsuccessful status code");
       }
     } catch (err) {
-      console.error("Error updating commission:", err);
-      
-      
       if (err.response) {
-        console.log("Error response data:", err.response.data);
-        console.log("Error response status:", err.response.status);
-        
-        
+        const detail = err.response.data?.detail || "";
         if (err.response.status === 403) {
-          if (err.response.data?.code === "auth_required" || 
-              err.response.data?.error === "Authentication required" ||
-              err.response.data?.detail?.includes("CSRF")) {
-            setError("Authentication error. Please try refreshing the page and logging in again.");
-          } else if (err.response.data?.detail?.includes("permission")) {
-            setError("You don't have permission to modify commission rates. Please contact an administrator.");
+          if (detail.includes("Authentication") || detail.includes("CSRF")) {
+            setError("Authentication error. Please refresh the page and log in again.");
+          } else if (detail.includes("permission")) {
+            setError("You don't have permission to modify commission rates.");
           } else {
-            setError(err.response.data?.detail || "Access denied. Please check your permissions.");
+            setError(detail || "Access denied. Check your permissions.");
           }
         } else {
-z
-          setError(
-            err.response.data?.error || 
-            err.response.data?.detail || 
-            err.response.data?.message || 
-            `Server error: ${err.response.status}`
-          );
+          setError(err.response.data?.error || detail || `Server error: ${err.response.status}`);
         }
       } else if (err.request) {
         setError("No response from server. Please check your connection.");
@@ -122,10 +79,7 @@ z
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-black text-lg font-medium">Edit {classification} Commission</h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-500"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-500">
             <span className="sr-only">Close</span>
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -151,7 +105,7 @@ z
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="percentage" className="block text-sm font-medium text-gray-700 mb-1">
-            {t('commissions.percentageLabel')}
+              {t('commissions.percentageLabel')}
             </label>
             <input
               type="number"
@@ -193,13 +147,12 @@ z
 
 function getDefaultRate(classification) {
   const DEFAULT_RATES = {
-    'bronze': 20.00,
-    'silver': 15.00,
-    'gold': 10.00,
-    'platinum': 5.00,
-    'special': 'Custom'
+    bronze: 20.0,
+    silver: 15.0,
+    gold: 10.0,
+    platinum: 5.0,
+    special: 'Custom'
   };
-  
   return DEFAULT_RATES[classification.toLowerCase()] || 'Custom';
 }
 
