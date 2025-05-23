@@ -119,7 +119,7 @@ const EditCommissionModal = ({ isOpen, onClose, classification, currentPercentag
       // Step 1: Get all commissions
       let allCommissionsResponse;
       try {
-        allCommissionsResponse = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/api/commissions/`, {
+        allCommissionsResponse = await axiosInstance.get('/api/commissions/', {
           params: { commission_type: 'vendor_type' }
         });
       } catch (fetchError) {
@@ -175,12 +175,32 @@ const EditCommissionModal = ({ isOpen, onClose, classification, currentPercentag
         percentage: parseFloat(percentage)
       };
 
-      const updateResponse = await axiosInstance.patch(
-        `${import.meta.env.VITE_API_URL}/api/commissions/${commission.id}/`,
-        updatePayload,
-        {
-          params: { commission_type: 'vendor_type' }
+      console.log('Attempting to update commission:', {
+        id: commission.id,
+        url: `/api/commissions/${commission.id}/`,
+        payload: updatePayload,
+        currentData: commission
+      });
+
+      // Try the update with additional headers that might be required
+      const updateConfig = {
+        params: { commission_type: 'vendor_type' },
+        headers: {
+          ...axiosInstance.defaults.headers,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         }
+      };
+
+      // Add referer header which some Django setups require
+      if (window.location) {
+        updateConfig.headers['Referer'] = window.location.href;
+      }
+
+      const updateResponse = await axiosInstance.patch(
+        `/api/commissions/${commission.id}/`,
+        updatePayload,
+        updateConfig
       );
 
       // Step 5: Handle success
@@ -226,6 +246,13 @@ const EditCommissionModal = ({ isOpen, onClose, classification, currentPercentag
             errorMessage = "Your session has expired. Please refresh the page and log in again.";
             break;
           case 403:
+            console.log('403 Error details:', {
+              url: err.config?.url,
+              method: err.config?.method,
+              headers: err.config?.headers,
+              data: data
+            });
+            
             if (data?.code === "auth_required" || 
                 data?.error?.includes("Authentication") ||
                 data?.message?.includes("Authentication") ||
@@ -235,8 +262,12 @@ const EditCommissionModal = ({ isOpen, onClose, classification, currentPercentag
               errorMessage = "Security token error. Please refresh the page and try again.";
             } else if (data?.detail?.includes("permission") || data?.error?.includes("permission")) {
               errorMessage = "You don't have permission to modify commission rates. Please contact an administrator.";
+            } else if (data?.detail?.includes("method") || data?.error?.includes("method")) {
+              errorMessage = "Invalid request method. The server doesn't allow this type of update.";
             } else {
-              errorMessage = data?.detail || data?.error || data?.message || "Access denied. Please check your permissions.";
+              // Provide more specific error message for commission updates
+              const baseMessage = data?.detail || data?.error || data?.message || "Access denied";
+              errorMessage = `${baseMessage}. This might be due to: insufficient permissions, incorrect user role, or server configuration. Please contact your administrator.`;
             }
             break;
           case 404:
